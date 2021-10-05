@@ -32,7 +32,7 @@ fp = open('sum_seqs.txt', 'r')
 
 n = 10
 N = 10
-
+'''
 matrix = [[None for i in range(n)] for j in range(N)]
 #Note: matrix[row][column]
 
@@ -52,6 +52,7 @@ for line in fp.readlines():
 		j += 1
 	i += 1
 print(matrix)
+'''
 
 
 

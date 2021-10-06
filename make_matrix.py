@@ -6,6 +6,7 @@ line, all the same length, with characters A, C, G and T).
 
 import math
 import random
+import sys
 
 def random_dna(N, length, A, C, G, T):
 	
@@ -28,33 +29,51 @@ file.write(random_dna(10, 10, 0.25, 0.25, 0.25, 0.25))
 file.close
 '''
 
-fp = open('sum_seqs.txt', 'r')
+def make_matrix(seqs):
 
-n = 10
-N = 10
-'''
-matrix = [[None for i in range(n)] for j in range(N)]
-#Note: matrix[row][column]
+	def shape(fp):
 
-i = 0
-for line in fp.readlines():
-	line = line.rstrip()
-	j = 0
-	for n in line:
-		if n.upper() == 'A':
-			matrix[i][j] = 1
-		if n.upper() == 'C':
-			matrix[i][j] = 2
-		if n.upper() == 'G':
-			matrix[i][j] = 3
-		if n.upper() == 'T':
-			matrix[i][j] = 4
-		j += 1
-	i += 1
-print(matrix)
-'''
+		shape = []
+		n = 0 
+		N = 0
+		count = 0
+		for line in fp.readlines():
+			line = line.rstrip()
+			N += 1
+			if count == 0:
+				for ACTG in line:
+					n += 1
+			count += 1
+		shape.append(n)
+		shape.append(N)
+		return shape 
+		
+	fp = open(seqs, 'r')
+	shape = shape(fp) #shape = [n, N]
+	fp.close()
 
+	fp = open(seqs, 'r') # needs to be opened twice
+	matrix = [[None for i in range(shape[0])] for j in range(shape[1])]
+	#Note: matrix[row][column][A/C/G/T]
 
+	i = 0
+	for line in fp.readlines():
+		line = line.rstrip()
+		j = 0
+		for n in line:
+			if n.upper() == 'A':
+				matrix[i][j] = [1,0,0,0]
+			if n.upper() == 'C':
+				matrix[i][j] = [0,1,0,0]
+			if n.upper() == 'G':
+				matrix[i][j] = [0,0,1,0]
+			if n.upper() == 'T':
+				matrix[i][j] = [0,0,0,1]
+			j += 1
+		i += 1
+	return matrix
+
+print(make_matrix(sys.argv[1]))
 
 
 

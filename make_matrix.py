@@ -73,7 +73,7 @@ def make_matrix(seqs):
 		i += 1
 	return matrix
 
-print(make_matrix(sys.argv[1]))
+#print(make_matrix(sys.argv[1]))
 
 
 

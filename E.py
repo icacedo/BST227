@@ -55,7 +55,21 @@ for sequence in mm.make_matrix(sys.argv[1]):
 		print(position)
 '''
 	
-	
+'''
+Notes for homework 1:
+make Xij a sequence instead of single nucleotide
+Easier if Xs are overlapping window
+Assume that the short sequences are independent
+Part 1 is due on tuesday
+Part 1 is write the joint liklihood 
+
+
+
+
+
+
+
+'''
 	
 	
 	

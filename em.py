@@ -70,11 +70,6 @@ def psi(length, decimal):
 	for i in range(4):
 		psi.append(freq_dist(length, decimal))
 	return psi
-
-def lambdas(decimal):
-	lambda0 = round(random.uniform(0, 1), decimal)
-	lambda1 = round(1 - lambda0, decimal)
-	return lambda0, lambda1
 	
 def shape(matrix):
 	rows = 0
@@ -86,23 +81,13 @@ def shape(matrix):
 	return (rows, columns)
 	
 # initialize psis
+# 1 is foreground, 0 is background
 # matrix of parameters size 4 x P
 # P = 6, length of motif
-psi_0 = psi(6, 2)
-psi_1 = psi(6, 2)
-
-# initialize lambdas
-# 0 = fg, 1 = bg
-tup = lambdas(2)
-lambda_0 = tup[0]
-lambda_1 = tup[1]
-
-
-
-
-# A = 0, C = 1, G = 2, T = 3
-# positions 0 to 7
-
+# dec means number of decimal places
+dec = 2
+psi_0mx = psi(6, dec)
+psi_1mx = psi(6, dec)
 
 # read in data to matrix and get matrix shape
 seq_mx = make_matrix(sys.argv[1])
@@ -112,12 +97,55 @@ rows = seq_mx_shape[0]
 # columns aka positions
 columns = seq_mx_shape[1]
 
+# specify size of motif
+P = 6
+
+# initialize lambdas
+lambdajs = []
+for i in range(columns):
+	lambdajs.append(round(random.uniform(0, 1), dec))
+
+# A=0, C=1, G=2, T=3
+bases = {0: [1, 0, 0, 0], 1: [0, 1, 0, 0], 
+	2: [0, 0, 1, 0], 3: [0, 0, 0, 1]}
+
+def unencode(encode):
+	if encode == [1, 0, 0, 0]:
+		return 0
+	if encode == [0, 1, 0, 0]:
+		return 1
+	if encode == [0, 0, 1, 0]:
+		return 2
+	if encode == [0, 0, 0, 1]:
+		return 3
+		
 # position j is where the motif starts
-# for each sequence
+# i for each sequence
+posteriors = []
 for i in range(rows):
 	# at each position
-	for j in range(columns):
-		print(j)
+	# motif can start at up to L-P+1 positions
+	Cijs_list = []
+	for j in range(columns-(P-1)):
+		# probability that Cij is the start of a motif
+		# that probability is lambdaj
+		# times the sum of probabilities for psi
+		Cij = lambdajs[j] 
+		for p in range(P):
+			Xijp = unencode(seq_mx[i][j+p])
+			Cij *= psi_1mx[Xijp][p] 
+		for jp in range(columns-(P-1)):
+			# jp is j'
+			if jp == j: continue
+			for p in range(P):	
+				Xijp = unencode(seq_mx[i][j+p])
+				Cij *= psi_0mx[Xijp][p]
+		Cijs_list.append(Cij)
+	posteriors.append(Cijs_list)
+print(posteriors)
+
+				
+
 
 
 

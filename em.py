@@ -136,6 +136,8 @@ for i in range(rows):
 			Cij *= psi_1mx[Xijp][p] 
 		for jp in range(columns-(P-1)):
 			# jp is j'
+			# to get background frequencies
+			# they cannot come from the same j as the foreground
 			if jp == j: continue
 			for p in range(P):	
 				Xijp = unencode(seq_mx[i][j+p])

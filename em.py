@@ -106,9 +106,6 @@ for i in range(columns):
 	lambdajs.append(round(random.uniform(0, 1), dec))
 
 # A=0, C=1, G=2, T=3
-bases = {0: [1, 0, 0, 0], 1: [0, 1, 0, 0], 
-	2: [0, 0, 1, 0], 3: [0, 0, 0, 1]}
-
 def unencode(encode):
 	if encode == [1, 0, 0, 0]:
 		return 0
@@ -121,7 +118,7 @@ def unencode(encode):
 		
 # position j is where the motif starts
 # i for each sequence
-posteriors = []
+numerators = []
 for i in range(rows):
 	# at each position
 	# motif can start at up to L-P+1 positions
@@ -143,8 +140,29 @@ for i in range(rows):
 				Xijp = unencode(seq_mx[i][j+p])
 				Cij *= psi_0mx[Xijp][p]
 		Cijs_list.append(Cij)
-	posteriors.append(Cijs_list)
-print(posteriors)
+	numerators.append(Cijs_list)
+
+denominators = []
+for freqs in numerators:
+	total = 0
+	for Cij in freqs:
+		total += Cij
+	denominators.append(total)
+
+posteriors = []
+for i in range(len(numerators)):
+	one_row = []
+	for j in range(len(numerators[i])):
+		# get a domain error only sometimes
+		# what is meant by subtract by the log of the smallest number?
+		# this doesn't work
+		# smallest = min(numerators[i][j], denominators[i])
+		# idk how to implement the logsumexp trick
+		one_row.append(numerators[i][j] \
+			/denominators[i])
+	posteriors.append(one_row)
+	
+
 
 				
 

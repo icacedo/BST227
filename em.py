@@ -163,8 +163,8 @@ for i in range(len(numerators)):
 		# i doubt the way i'm using the logs here is correct
 		# i'm just going to keep going anyway
 		# at least python isn't giving me an error
-		one_row.append(math.exp(math.log(numerators[i][j]) \
-			/ denominators[i]))
+		one_row.append(math.log(numerators[i][j]) \
+			/ denominators[i])
 	posteriors.append(one_row)
 	
 print(posteriors)

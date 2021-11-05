@@ -54,7 +54,8 @@ def freq_dist(length, decimal):
 		total = 0 
 		isone = 0
 		for i in range(len(vector)):
-			freq = float(random.uniform(0, 1))
+			# can't have zeroes in the initialization
+			freq = float(random.uniform(0.1, 1))
 			vector[i] = freq
 			total += freq
 		for i in range(len(vector)):
@@ -103,7 +104,8 @@ P = 6
 # initialize lambdas
 lambdajs = []
 for i in range(columns):
-	lambdajs.append(round(random.uniform(0, 1), dec))
+	# can't have zeroes in the initialization
+	lambdajs.append(round(random.uniform(0.1, 1), dec))
 
 # A=0, C=1, G=2, T=3
 def unencode(encode):
@@ -127,7 +129,7 @@ for i in range(rows):
 		# probability that Cij is the start of a motif
 		# that probability is lambdaj
 		# times the sum of probabilities for psi
-		Cij = lambdajs[j] 
+		Cij = lambdajs[j]
 		for p in range(P):
 			Xijp = unencode(seq_mx[i][j+p])
 			Cij *= psi_1mx[Xijp][p] 
@@ -146,7 +148,7 @@ denominators = []
 for freqs in numerators:
 	total = 0
 	for Cij in freqs:
-		total += Cij
+		total += math.log(Cij)
 	denominators.append(total)
 
 posteriors = []
@@ -158,10 +160,18 @@ for i in range(len(numerators)):
 		# this doesn't work
 		# smallest = min(numerators[i][j], denominators[i])
 		# idk how to implement the logsumexp trick
-		one_row.append(numerators[i][j] \
-			/denominators[i])
+		# i doubt the way i'm using the logs here is correct
+		# i'm just going to keep going anyway
+		# at least python isn't giving me an error
+		one_row.append(math.exp(math.log(numerators[i][j]) \
+			/ denominators[i]))
 	posteriors.append(one_row)
 	
+print(posteriors)
+
+### notes from class ###
+# initialize parameters to ground truth and see if the model moves away
+
 
 
 				

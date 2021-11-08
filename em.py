@@ -2,6 +2,7 @@ import math
 import random
 import sys
 
+# i know i am not using one hot encoding correctly
 def make_matrix(seqs):
 
 	def shape(fp):
@@ -162,6 +163,27 @@ for i in range(len(numerators)):
 			/denominators[i])
 	posteriors.append(one_row)
 	
+# according to a1sol.pdf, posteriors = entropy?
+# is lambaj_hat the sum of all posteriors at one position?
+
+column_sums = [0 for i in range(len(posteriors[1])+(P-1))]
+for i in range(len(posteriors)):
+	for j in range(len(posteriors[i])):
+		column_sums[j] += posteriors[i][j]
+		
+lambdaj_hats = []
+for i in range(len(column_sums)):
+	N = len(posteriors)
+	lambdaj_hats.append(column_sums[i]/N)
+
+psi1_hats = [[] for i in range(4)]
+
+
+
+
+
+
+		
 
 
 				

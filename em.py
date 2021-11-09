@@ -128,10 +128,12 @@ for i in range(rows):
 		# probability that Cij is the start of a motif
 		# that probability is lambdaj
 		# times the sum of probabilities for psi
-		Cij = lambdajs[j] 
+		Cij = math.log(lambdajs[j]) 
 		for p in range(P):
 			Xijp = unencode(seq_mx[i][j+p])
-			Cij *= psi_1mx[Xijp][p] 
+			# logsumexp trick
+			# change from *= to +=
+			Cij += math.log(psi_1mx[Xijp][p]) 
 		for jp in range(columns-(P-1)):
 			# jp is j'
 			# to get background frequencies
@@ -139,8 +141,9 @@ for i in range(rows):
 			if jp == j: continue
 			for p in range(P):	
 				Xijp = unencode(seq_mx[i][j+p])
-				Cij *= psi_0mx[Xijp][p]
-		Cijs_list.append(Cij)
+				# logsumexp
+				Cij += math.log(psi_0mx[Xijp][p])
+		Cijs_list.append(math.exp(Cij))
 	numerators.append(Cijs_list)
 
 denominators = []
@@ -154,11 +157,6 @@ posteriors = []
 for i in range(len(numerators)):
 	one_row = []
 	for j in range(len(numerators[i])):
-		# get a domain error only sometimes
-		# what is meant by subtract by the log of the smallest number?
-		# this doesn't work
-		# smallest = min(numerators[i][j], denominators[i])
-		# idk how to implement the logsumexp trick
 		one_row.append(numerators[i][j] \
 			/denominators[i])
 	posteriors.append(one_row)
@@ -209,34 +207,39 @@ for i in range(len(posteriors)):
 psi1_hats = [[] for i in range(4)]
 Alist1 = []
 for i in range(len(position_sumsA)):
-	Alist1.append(position_sumsA[i]/len(posteriors[0]))
+	Alist1.append(position_sumsA[i]/len(posteriors))
 Clist1 = []
 for i in range(len(position_sumsC)):
-	Clist1.append(position_sumsC[i]/len(posteriors[0]))
+	Clist1.append(position_sumsC[i]/len(posteriors))
 Glist1 = []
 for i in range(len(position_sumsG)):
-	Glist1.append(position_sumsG[i]/len(posteriors[0]))	
+	Glist1.append(position_sumsG[i]/len(posteriors))	
 Tlist1 = []
 for i in range(len(position_sumsT)):
-	Tlist1.append(position_sumsT[i]/len(posteriors[0]))
+	Tlist1.append(position_sumsT[i]/len(posteriors))
 psi1_hats[0] = Alist1
 psi1_hats[1] = Clist1
 psi1_hats[2] = Glist1
 psi1_hats[3] = Tlist1
 
+#####################################################
 psi0_hats = [[] for i in range(4)]
 Alist0 = []
 for i in range(len(position_sumsA)):
-	Alist0.append((1-position_sumsA[i])/len(posteriors[0]))
+	Alist0.append((1-position_sumsA[i])/((len(posteriors[0])- \
+		P+1-1)*len(posteriors)))
 Clist0 = []
 for i in range(len(position_sumsC)):
-	Clist0.append((1-position_sumsC[i])/len(posteriors[0]))
+	Clist0.append((1-position_sumsC[i])/((len(posteriors[0])- \
+		P+1-1)*len(posteriors)))
 Glist0 = []
 for i in range(len(position_sumsG)):
-	Glist0.append((1-position_sumsG[i])/len(posteriors[0]))	
+	Glist0.append((1-position_sumsG[i])/((len(posteriors[0])- \
+		P+1-1)*len(posteriors)))	
 Tlist0 = []
 for i in range(len(position_sumsT)):
-	Tlist0.append((1-position_sumsT[i])/len(posteriors[0]))
+	Tlist0.append((1-position_sumsT[i])/((len(posteriors[0])- \
+		P+1-1)*len(posteriors)))
 psi0_hats[0] = Alist0
 psi0_hats[1] = Clist0
 psi0_hats[2] = Glist0
@@ -244,22 +247,22 @@ psi0_hats[3] = Tlist0
 
 ##############################################
 # log likelihood
-'''
+
 term1 = 0
 for i in range(len(posteriors)):
 	for j in range(len(posteriors[i])-P+1):
 		term1 += posteriors[i][j] * math.log(lambdaj_hats[j])
-'''
-'''
+
 term2 = 0 
 for i in range(len(posteriors)):
 	for j in range(len(posteriors[i])-P+1):
 		for p in range(P):
 			base = unencode(seq_mx[i][j+p])
 			this = (posteriors[i][j])*(math.log(psi1_hats[base][p]))
+			print(psi0_hats[base][p])
 			that = (1-posteriors[i][j])*(math.log(psi0_hats[base][p]))
 			term2 += this + that
-'''	
+	
 
 
 

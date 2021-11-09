@@ -163,21 +163,25 @@ for i in range(len(numerators)):
 			/denominators[i])
 	posteriors.append(one_row)
 
+#######################################
+# posteriors[0] length of 33 is correct
+
 # adding back in zeroes 
 # getting indexing error in m step
 # i think there is an indexing error somewhere
 # code gets sequence length of 39, not 38
 # might be ignorable for now
 for i in range(len(posteriors)):
-	for p in range(P):
-		posteriors[i].append(0)
+	# first position in motif length should not be 0
+	for p in range(P-1):
+		posteriors[i].append(0.0001)
 
 # according to a1sol.pdf, posteriors = entropy?
 # is lambaj_hat the sum of all posteriors at one position?
 
-column_sums = [0 for i in range(len(posteriors[0])+(P-1))]
+column_sums = [0 for i in range(len(posteriors[0])-P+1)]
 for i in range(len(posteriors)):
-	for j in range(len(posteriors[i])):
+	for j in range(len(posteriors[i])-P+1):
 		column_sums[j] += posteriors[i][j]
 		
 lambdaj_hats = []
@@ -190,7 +194,7 @@ position_sumsC = [0 for i in range(P)]
 position_sumsG = [0 for i in range(P)]
 position_sumsT = [0 for i in range(P)]
 for i in range(len(posteriors)):
-	for j in range(len(posteriors[i])-P):
+	for j in range(len(posteriors[i])-P+1):
 		for p in range(P):
 			base = unencode(seq_mx[i][j+p])
 			if base == 0:
@@ -201,17 +205,68 @@ for i in range(len(posteriors)):
 				position_sumsG[p] += posteriors[i][j+p]
 			if base == 3:
 				position_sumsT[p] += posteriors[i][j+p]
+
 psi1_hats = [[] for i in range(4)]
-
+Alist1 = []
 for i in range(len(position_sumsA)):
-	print(position_sumsA[i]/len(posteriors[0]))
+	Alist1.append(position_sumsA[i]/len(posteriors[0]))
+Clist1 = []
+for i in range(len(position_sumsC)):
+	Clist1.append(position_sumsC[i]/len(posteriors[0]))
+Glist1 = []
+for i in range(len(position_sumsG)):
+	Glist1.append(position_sumsG[i]/len(posteriors[0]))	
+Tlist1 = []
+for i in range(len(position_sumsT)):
+	Tlist1.append(position_sumsT[i]/len(posteriors[0]))
+psi1_hats[0] = Alist1
+psi1_hats[1] = Clist1
+psi1_hats[2] = Glist1
+psi1_hats[3] = Tlist1
 
-		
-	
+psi0_hats = [[] for i in range(4)]
+Alist0 = []
+for i in range(len(position_sumsA)):
+	Alist0.append((1-position_sumsA[i])/len(posteriors[0]))
+Clist0 = []
+for i in range(len(position_sumsC)):
+	Clist0.append((1-position_sumsC[i])/len(posteriors[0]))
+Glist0 = []
+for i in range(len(position_sumsG)):
+	Glist0.append((1-position_sumsG[i])/len(posteriors[0]))	
+Tlist0 = []
+for i in range(len(position_sumsT)):
+	Tlist0.append((1-position_sumsT[i])/len(posteriors[0]))
+psi0_hats[0] = Alist0
+psi0_hats[1] = Clist0
+psi0_hats[2] = Glist0
+psi0_hats[3] = Tlist0
+
+##############################################
+# log likelihood
+'''
+term1 = 0
+for i in range(len(posteriors)):
+	for j in range(len(posteriors[i])-P+1):
+		term1 += posteriors[i][j] * math.log(lambdaj_hats[j])
+'''
+'''
+term2 = 0 
+for i in range(len(posteriors)):
+	for j in range(len(posteriors[i])-P+1):
+		for p in range(P):
+			base = unencode(seq_mx[i][j+p])
+			this = (posteriors[i][j])*(math.log(psi1_hats[base][p]))
+			that = (1-posteriors[i][j])*(math.log(psi0_hats[base][p]))
+			term2 += this + that
+'''	
 
 
 
-		
+
+
+
+
 
 
 				

@@ -162,11 +162,20 @@ for i in range(len(numerators)):
 		one_row.append(numerators[i][j] \
 			/denominators[i])
 	posteriors.append(one_row)
-	
+
+# adding back in zeroes 
+# getting indexing error in m step
+# i think there is an indexing error somewhere
+# code gets sequence length of 39, not 38
+# might be ignorable for now
+for i in range(len(posteriors)):
+	for p in range(P):
+		posteriors[i].append(0)
+
 # according to a1sol.pdf, posteriors = entropy?
 # is lambaj_hat the sum of all posteriors at one position?
 
-column_sums = [0 for i in range(len(posteriors[1])+(P-1))]
+column_sums = [0 for i in range(len(posteriors[0])+(P-1))]
 for i in range(len(posteriors)):
 	for j in range(len(posteriors[i])):
 		column_sums[j] += posteriors[i][j]
@@ -176,10 +185,29 @@ for i in range(len(column_sums)):
 	N = len(posteriors)
 	lambdaj_hats.append(column_sums[i]/N)
 
+position_sumsA = [0 for i in range(P)]
+position_sumsC = [0 for i in range(P)]
+position_sumsG = [0 for i in range(P)]
+position_sumsT = [0 for i in range(P)]
+for i in range(len(posteriors)):
+	for j in range(len(posteriors[i])-P):
+		for p in range(P):
+			base = unencode(seq_mx[i][j+p])
+			if base == 0:
+				position_sumsA[p] += posteriors[i][j+p]
+			if base == 1:
+				position_sumsC[p] += posteriors[i][j+p]
+			if base == 2:
+				position_sumsG[p] += posteriors[i][j+p]
+			if base == 3:
+				position_sumsT[p] += posteriors[i][j+p]
 psi1_hats = [[] for i in range(4)]
 
+for i in range(len(position_sumsA)):
+	print(position_sumsA[i]/len(posteriors[0]))
 
-
+		
+	
 
 
 

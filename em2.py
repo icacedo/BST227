@@ -101,9 +101,57 @@ def E_step(seqs, P, psi_0s, psi_1s, lambdajs):
 		
 	return posteriors
 	
+def E_step_kat(data, theta, P):
+    dict = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+    C = []
+    for i in range(len(data)):
+        C_i = []
+        for j in range(len(data[0])-P+1):   # 0 to 38-6+1
+            C_ij = np.log(theta['lmbda'][j])
+            # Iterate through all positions of the motif
+            for p in range(P):
+                base = data[i][j+p]
+                k = dict[base]
+                C_ij += np.log(theta['psi_0'][k][p])
+            # Iterate through all positions of the non-motif
+            for jpr in range(len(data[0])-P+1): # j' is the start position of a non-motif sequence
+                if jpr == j: # if j:j+p includes a base that is non motif, score it as background
+                    continue
+                for p in range(P):
+                    base = data[i][jpr+p]
+                    k = dict[base]
+                    C_ij += np.log(theta['psi_0'][k][p])
+            C_i.append(np.exp(C_ij))  # move cij back to probability space
+        sm = sum(C_i) # denominator
+        C_i = [item/sm for item in C_i]  # normalization
+        C.append(C_i)
+    return C
+	
 ##### M step ##################################################################
-posteriors = E_step(seqs, P, psi_0s, psi_1s, lambdajs)
+#posteriors = E_step(seqs, P, psi_0s, psi_1s, lambdajs)
 
+##### test ####################################################################
+
+import numpy as np
+np.random.seed(10)
+
+def init_EM(seq_length, motif_length):
+    lmbda = np.random.uniform(0,1,size=(seq_length,))
+    lmbda = lmbda/np.sum(lmbda)  # normalization
+    psi_0 = np.random.uniform(0,1,size=(4,motif_length))
+    psi_0 = psi_0/psi_0.sum(axis=0)
+    psi_1 = np.random.uniform(0,1,size=(4,motif_length))
+    psi_1 = psi_1/psi_1.sum(axis=0)
+    theta = {'lmbda': lmbda, 'psi_0': psi_0, 'psi_1': psi_1}
+    return theta
+
+theta = init_EM(len(seqs[0]), P)
+
+#C = E_step_kat(seqs, theta, P)
+
+posteriors = E_step(seqs, P, theta['psi_0'], theta['psi_1'], theta['lmbda'])
+
+print(posteriors)
 
 
 

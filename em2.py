@@ -1,6 +1,7 @@
 import sys
 import random
 import math
+import numpy as np
 
 ##### read in sequences #######################################################
 fp = open(sys.argv[1], 'r')
@@ -101,6 +102,48 @@ def E_step(seqs, P, psi_0s, psi_1s, lambdajs):
 		
 	return posteriors
 	
+##### M step ##################################################################
+posteriors = E_step(seqs, P, psi_0s, psi_1s, lambdajs)
+theta = {'lmbda': lambdajs, 'psi_0': psi_0s, 'psi_1': psi_1s}
+
+theta_hat = {'lmbda_hat': None, 'psi_0_hat': None, 'psi_1': None}
+
+arr_lmbda = np.array([np.array(row) for row in posteriors])
+arrsum_lmbda = np.sum(arr_lmbda, axis=0)
+theta_hat['lmbda_hat'] = np.divide(arrsum_lmbda, len(posteriors))
+
+psi0_arr = np.zeros(shape=(4,P))
+letters = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+for i in range(len(posteriors)):
+	for j in range(len(posteriors[0])-P+1):
+		for p in range(P):
+			Xijp = letters[seqs[i][j+p]]
+			k = letters[seqs[i][j]]
+			if Xijp == k:
+				Xijpk = 1
+			else:
+				Xijpk = 0
+			psi0_arr[Xijp][p]
+
+
+
+
+##### test ####################################################################
+# wanted to see if our e steps get the same-ish output
+# they are the same-ish
+np.random.seed(10)
+
+def init_EM(seq_length, motif_length):
+    lmbda = np.random.uniform(0,1,size=(seq_length,))
+    lmbda = lmbda/np.sum(lmbda)  # normalization
+    psi_0 = np.random.uniform(0,1,size=(4,motif_length))
+    psi_0 = psi_0/psi_0.sum(axis=0)
+    psi_1 = np.random.uniform(0,1,size=(4,motif_length))
+    psi_1 = psi_1/psi_1.sum(axis=0)
+    theta = {'lmbda': lmbda, 'psi_0': psi_0, 'psi_1': psi_1}
+    return theta
+    
+# katherine's e step
 def E_step_kat(data, theta, P):
     dict = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
     C = []
@@ -126,34 +169,24 @@ def E_step_kat(data, theta, P):
         C_i = [item/sm for item in C_i]  # normalization
         C.append(C_i)
     return C
-	
-##### M step ##################################################################
-#posteriors = E_step(seqs, P, psi_0s, psi_1s, lambdajs)
 
-##### test ####################################################################
-
-import numpy as np
-np.random.seed(10)
-
-def init_EM(seq_length, motif_length):
-    lmbda = np.random.uniform(0,1,size=(seq_length,))
-    lmbda = lmbda/np.sum(lmbda)  # normalization
-    psi_0 = np.random.uniform(0,1,size=(4,motif_length))
-    psi_0 = psi_0/psi_0.sum(axis=0)
-    psi_1 = np.random.uniform(0,1,size=(4,motif_length))
-    psi_1 = psi_1/psi_1.sum(axis=0)
-    theta = {'lmbda': lmbda, 'psi_0': psi_0, 'psi_1': psi_1}
-    return theta
-
-theta = init_EM(len(seqs[0]), P)
+#theta = init_EM(len(seqs[0]), P)
 
 #C = E_step_kat(seqs, theta, P)
 
-posteriors = E_step(seqs, P, theta['psi_0'], theta['psi_1'], theta['lmbda'])
+#posteriors = E_step(seqs, P, theta['psi_0'], theta['psi_1'], theta['lmbda'])
 
-print(posteriors)
+#print(posteriors)
 
-
+# testing what np.sum and np.divide does
+'''
+arr = np.array([[1,2,3],[4,5,6]])
+print(arr)
+arrsum = np.sum(arr, axis=0)
+print(arrsum)
+arrdiv = np.divide(arrsum, 2)
+print(arrdiv)
+'''
 
 
 

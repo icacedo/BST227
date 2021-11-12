@@ -106,26 +106,46 @@ def E_step(seqs, P, psi_0s, psi_1s, lambdajs):
 posteriors = E_step(seqs, P, psi_0s, psi_1s, lambdajs)
 theta = {'lmbda': lambdajs, 'psi_0': psi_0s, 'psi_1': psi_1s}
 
-theta_hat = {'lmbda_hat': None, 'psi_0_hat': None, 'psi_1': None}
+def M_step(seqs, posteriors, P):
 
-arr_lmbda = np.array([np.array(row) for row in posteriors])
-arrsum_lmbda = np.sum(arr_lmbda, axis=0)
-theta_hat['lmbda_hat'] = np.divide(arrsum_lmbda, len(posteriors))
+	theta_hat = {'lmbda_hat': None, 'psi_1_hat': None, 'psi_0_hat': None}
 
-psi0_arr = np.zeros(shape=(4,P))
-letters = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
-for i in range(len(posteriors)):
-	for j in range(len(posteriors[0])-P+1):
-		for p in range(P):
-			Xijp = letters[seqs[i][j+p]]
-			k = letters[seqs[i][j]]
-			if Xijp == k:
-				Xijpk = 1
-			else:
-				Xijpk = 0
-			psi0_arr[Xijp][p]
+	arr_lmbda = np.array([np.array(row) for row in posteriors])
+	arrsum_lmbda = np.sum(arr_lmbda, axis=0)
+	theta_hat['lmbda_hat'] = np.divide(arrsum_lmbda, len(posteriors))
 
+	letters = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+	psi1_arr = np.zeros(shape=(4,P))
+	for i in range(len(posteriors)):
+		for j in range(len(posteriors[0])-P+1):
+			for p in range(P):
+				Xijp = letters[seqs[i][j+p]]
+				k = letters[seqs[i][j]]
+				if Xijp == k:
+					Xijpk = 1
+				else:
+					Xijpk = 0
+				psi1_arr[Xijp][p] += Xijpk * posteriors[i][j]
+				
+	theta_hat['psi_1_hat'] = np.divide(psi1_arr, len(posteriors))
 
+	psi0_arr = np.zeros(shape=(4,P))		
+	for i in range(len(posteriors)):
+		for j in range(len(posteriors[0])-P+1):
+			for p in range(P):
+				Xijp = letters[seqs[i][j+p]]
+				k = letters[seqs[i][j]]
+				if Xijp == k:
+					Xijpk = 1
+				else:
+					Xijpk = 0
+				psi0_arr[Xijp][p] += Xijpk * (1- \
+					posteriors[i][j])
+
+	theta_hat['psi_0_hat'] = np.divide(psi0_arr, ((len(posteriors[0]) \
+		-P+1-1)*(len(posteriors))))
+	
+	return theta_hat
 
 
 ##### test ####################################################################
@@ -170,11 +190,11 @@ def E_step_kat(data, theta, P):
         C.append(C_i)
     return C
 
-#theta = init_EM(len(seqs[0]), P)
+theta = init_EM(len(seqs[0]), P)
 
 #C = E_step_kat(seqs, theta, P)
 
-#posteriors = E_step(seqs, P, theta['psi_0'], theta['psi_1'], theta['lmbda'])
+posteriors = E_step(seqs, P, theta['psi_0'], theta['psi_1'], theta['lmbda'])
 
 #print(posteriors)
 
@@ -187,12 +207,33 @@ print(arrsum)
 arrdiv = np.divide(arrsum, 2)
 print(arrdiv)
 '''
+# katherine's m step
+def M_step_kat(data, C, P):
+    dict = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 
+    lmbda = np.array(C).sum(axis=0)  # sum by column of matrix
+    lmbda = lmbda / 357  # divide all elements in list by N (normalization)
 
+    # Initialize new psi matrices
+    psi_1 = np.zeros((4, P))
+    psi_0 = np.zeros((4, P))
+    for p in range(P):
+        for i in range(len(data)):
+            for j in range(0, len(data[0])-P+1):
+                base = data[i][j+p]
+                k = dict[base]
+                psi_1[k, p] += C[i][j]
+                psi_0[k, p] += 1 - (C[i][j])
+    psi_1 /= len(data)  # normalization
+    psi_0 /= len(data)*(len(data[0])-P)  # normalization
+    theta = {'lmbda': lmbda, 'psi_1': psi_1, 'psi_0': psi_0}
+    return theta
 
+np.random.seed(10)
+theta_hat_kat = M_step_kat(seqs, posteriors, P)
+theta_hat = M_step(seqs, posteriors, P)
 
-
-
+print(theta_hat)
 
 
 
